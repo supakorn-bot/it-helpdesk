@@ -55,6 +55,43 @@
         .table-hover tbody tr:hover td {
             background-color: #f8fafc !important; /* สีไฮไลท์เวลาเอาเมาส์ชี้แถว */
         }
+
+        
+        /* ========================================= */
+        /* ระบบปักหมุดงานแบบมืออาชีพ */
+        /* ========================================= */
+        .pinned-row td {
+            background-color: #fff8e1 !important;
+            border-top: 3px solid #f59f00 !important;
+        }
+        .pin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #ffca2c 0%, #ff922b 100%);
+            color: #212529;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.35);
+            margin-bottom: 6px;
+        }
+        .btn-pin-active {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            border: none;
+        }
+        .btn-pin-normal {
+            background: #343a40 !important;
+            color: #fff !important;
+            border: none;
+        }
+        .pin-help-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
     </style>
 </head>
 <body>
@@ -213,15 +250,159 @@
       <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="bi bi-card-text"></i> รายละเอียดใบแจ้งซ่อม</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="ticketModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิดหน้าต่าง</button></div></div></div>
     </div>
 
+
+    <!-- Modal สำหรับปักหมุดงาน -->
+    <div class="modal fade" id="pinTicketModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="bi bi-pin-angle-fill"></i> ตั้งค่าปักหมุดงาน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="pinTicketId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ลำดับปักหมุด</label>
+                    <select class="form-select" id="pinOrderSelect">
+                        <option value="0">ไม่ปักหมุด / ยกเลิกปักหมุด</option>
+                        <option value="1">📌 ลำดับ 1 - สำคัญที่สุด</option>
+                        <option value="2">📌 ลำดับ 2</option>
+                        <option value="3">📌 ลำดับ 3</option>
+                        <option value="4">📌 ลำดับ 4</option>
+                        <option value="5">📌 ลำดับ 5</option>
+                        <option value="6">📌 ลำดับ 6</option>
+                        <option value="7">📌 ลำดับ 7</option>
+                        <option value="8">📌 ลำดับ 8</option>
+                        <option value="9">📌 ลำดับ 9</option>
+                        <option value="10">📌 ลำดับ 10</option>
+                    </select>
+                    <div class="pin-help-text mt-2">
+                        งานที่ปักหมุดจะอยู่บนสุดเสมอ เรียงจาก 1 ไป 10 และบันทึกขึ้น Server
+                    </div>
+                </div>
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-shield-lock"></i> เฉพาะ Admin เท่านั้นที่แก้ไขลำดับปักหมุดได้
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                <button type="button" class="btn btn-warning fw-bold" onclick="savePinnedOrder()">
+                    <i class="bi bi-save"></i> บันทึกปักหมุด
+                </button>
+            </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-       const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylW3IFKBa_V6X1zGni4WA0WztpaIa5rP1UHjWw1DFZ-d5B9e9ExXDJ2Ev_vz_h_buL/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylW3IFKBa_V6X1zGni4WA0WztpaIa5rP1UHjWw1DFZ-d5B9e9ExXDJ2Ev_vz_h_buL/exec';
         const ADMIN_PASS = "dfsK@2012";
 
         let tickets = [];
         let editingTicketId = null;
         let currentImageBase64 = null; 
+
+        function normalizePinOrder(value) {
+            const n = parseInt(value, 10);
+            return Number.isInteger(n) && n >= 1 && n <= 10 ? n : 0;
+        }
+
+        function adminLogin() {
+            const user = prompt("🔒 กรุณาใส่ Username:");
+            if (user !== "admin") {
+                alert("❌ Username ไม่ถูกต้อง!");
+                return false;
+            }
+
+            const pass = prompt("🔑 กรุณาใส่ Password:");
+            if (pass !== ADMIN_PASS) {
+                alert("❌ Password ไม่ถูกต้อง!");
+                return false;
+            }
+
+            return true;
+        }
+
+        function sortTicketsProfessional(list) {
+            return list.sort((a, b) => {
+                const aPin = normalizePinOrder(a.pinnedOrder);
+                const bPin = normalizePinOrder(b.pinnedOrder);
+
+                // งานปักหมุดขึ้นก่อนเสมอ และเรียง 1 -> 10
+                if (aPin && bPin && aPin !== bPin) return aPin - bPin;
+                if (aPin && !bPin) return -1;
+                if (!aPin && bPin) return 1;
+
+                // ถ้าเลือกเรียงความเร่งด่วน ให้ให้ความเร่งด่วนมีผลหลังจากปักหมุด
+                const priorityFilter = document.getElementById('priorityFilter')?.value;
+                if (priorityFilter === 'sort_priority') {
+                    const pWeight = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+                    const pa = pWeight[a.priority] || 0;
+                    const pb = pWeight[b.priority] || 0;
+                    if (pb !== pa) return pb - pa;
+                }
+
+                // ค่าเริ่มต้น: งานใหม่ขึ้นก่อน
+                return new Date(b.dateTime) - new Date(a.dateTime);
+            });
+        }
+
+        function openPinModal(id) {
+            if (!adminLogin()) return;
+
+            const ticket = tickets.find(t => t.id === id);
+            if (!ticket) return alert("ไม่พบใบงานนี้");
+
+            document.getElementById('pinTicketId').value = id;
+            document.getElementById('pinOrderSelect').value = String(normalizePinOrder(ticket.pinnedOrder));
+
+            new bootstrap.Modal(document.getElementById('pinTicketModal')).show();
+        }
+
+        function savePinnedOrder() {
+            const id = document.getElementById('pinTicketId').value;
+            const pinNumber = normalizePinOrder(document.getElementById('pinOrderSelect').value);
+            const ticket = tickets.find(t => t.id === id);
+
+            if (!ticket) return alert("ไม่พบใบงานนี้");
+
+            const updatedTicket = {
+                ...ticket,
+                action: "update",
+                pinnedOrder: pinNumber
+            };
+
+            showLoader(pinNumber ? `กำลังปักหมุดลำดับ ${pinNumber} ขึ้น Server...` : "กำลังยกเลิกปักหมุดขึ้น Server...");
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(updatedTicket)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('pinTicketModal'));
+                    if (modal) modal.hide();
+
+                    alert(pinNumber ? `✅ ปักหมุดลำดับ ${pinNumber} สำเร็จ!` : "✅ ยกเลิกปักหมุดสำเร็จ!");
+                    loadTicketsFromDB();
+                } else {
+                    alert('❌ บันทึกปักหมุดไม่สำเร็จ: ' + (result.error || 'ไม่ทราบสาเหตุ'));
+                    hideLoader();
+                }
+            })
+            .catch(error => {
+                console.error("Pin error:", error);
+                ticket.pinnedOrder = pinNumber;
+                searchTickets();
+                hideLoader();
+                alert("⚠️ หน้าเว็บปักหมุดแล้ว แต่ Server อาจยังไม่บันทึกค่า pinnedOrder\nถ้ารีเฟรชแล้วหมุดหาย ต้องเพิ่ม field pinnedOrder ใน Apps Script / Google Sheet");
+            });
+        }
+
 
         document.addEventListener('DOMContentLoaded', loadTicketsFromDB);
 
@@ -301,7 +482,8 @@
                 priority: document.getElementById('priority').value,
                 status: document.getElementById('status').value,
                 notes: document.getElementById('notes').value,
-                attachedImage: currentImageBase64 === "deleted" ? "" : currentImageBase64 
+                attachedImage: currentImageBase64 === "deleted" ? "" : currentImageBase64,
+                pinnedOrder: editingTicketId ? normalizePinOrder(tickets.find(t => t.id === editingTicketId)?.pinnedOrder) : 0
             };
 
             showLoader(editingTicketId ? "กำลังอัปเดตข้อมูลขึ้น Server..." : "กำลังบันทึกและอัปโหลดข้อมูล...");
@@ -373,16 +555,20 @@
 
                 const hasImage = (ticket.attachedImage && ticket.attachedImage.indexOf('http') === 0) ? `<br><a href="${ticket.attachedImage}" target="_blank" class="text-decoration-none mt-2 d-inline-block"><i class="bi bi-paperclip has-attachment" title="ดูรูปภาพแนบ"></i> มีรูปภาพแนบ</a>` : '';
 
+                const pinOrder = normalizePinOrder(ticket.pinnedOrder);
+                const pinBadge = pinOrder ? `<span class="pin-badge"><i class="bi bi-pin-angle-fill"></i> ปักหมุด #${pinOrder}</span><br>` : '';
+
                 return `
-                    <tr>
+                    <tr class="${pinOrder ? 'pinned-row' : ''}">
                         <td><small>${formattedDate}</small></td>
-                        <td>${ticket.requesterName}</td>
+                        <td>${pinBadge}${ticket.requesterName}</td>
                         <td>${ticket.department}</td>
                         <td>${ticket.deviceType}</td>
                         <td style="white-space: pre-line;">${ticket.problemDescription} ${hasImage}</td>
                         <td>${priorityBadge[ticket.priority]}</td>
                         <td class="text-center">${statusBadge[ticket.status]}</td>
-                        <td style="min-width: 120px;">
+                        <td style="min-width: 160px;">
+                            <button class="action-btn btn-sm ${pinOrder ? 'btn-pin-active' : 'btn-pin-normal'}" onclick="openPinModal('${ticket.id}')" title="ปักหมุด / จัดลำดับ"><i class="bi bi-pin-angle-fill"></i></button>
                             <button class="action-btn btn-sm btn-primary text-white" onclick="viewTicket('${ticket.id}')" title="ดูรายละเอียด"><i class="bi bi-eye"></i></button>
                             <button class="action-btn btn-sm btn-warning" onclick="editTicket('${ticket.id}')" title="แก้ไข"><i class="bi bi-pencil"></i></button>
                             <button class="action-btn btn-sm btn-danger" onclick="deleteTicket('${ticket.id}')" title="ลบ"><i class="bi bi-trash"></i></button>
@@ -418,8 +604,7 @@
         }
 
         function editTicket(id) {
-            const user = prompt("🔒 กรุณาใส่ Username:"); if (user !== "admin") return alert("❌ Username ไม่ถูกต้อง!");
-            const pass = prompt("🔑 กรุณาใส่ Password:"); if (pass !== ADMIN_PASS) return alert("❌ Password ไม่ถูกต้อง!");
+            if (!adminLogin()) return;
 
             const t = tickets.find(t => t.id === id); if (!t) return;
 
@@ -450,8 +635,7 @@
         }
 
         function deleteTicket(id) {
-            const user = prompt("🔒 กรุณาใส่ Username:"); if (user !== "admin") return alert("❌ Username ไม่ถูกต้อง!");
-            const pass = prompt("🔑 กรุณาใส่ Password:"); if (pass !== ADMIN_PASS) return alert("❌ Password ไม่ถูกต้อง!");
+            if (!adminLogin()) return;
 
             if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบใบแจ้งซ่อมนี้?')) {
                 showLoader("กำลังลบข้อมูลออกจาก Server...");
@@ -464,8 +648,7 @@
         }
 
         function clearAllData() {
-            const user = prompt("🔒 กรุณาใส่ Username:"); if (user !== "admin") return alert("❌ Username ไม่ถูกต้อง!");
-            const pass = prompt("🔑 กรุณาใส่ Password:"); if (pass !== ADMIN_PASS) return alert("❌ Password ไม่ถูกต้อง!");
+            if (!adminLogin()) return;
 
             if(confirm('⚠️ อันตราย! คุณต้องการล้างข้อมูล "ทั้งหมด" ออกจากเซิร์ฟเวอร์ใช่หรือไม่?')) {
                 showLoader("กำลังล้างข้อมูลทั้งหมดบน Server...");
@@ -497,21 +680,11 @@
                 return matchText && matchStatus && matchPriority;
             });
 
-            // ระบบจัดเรียงลำดับความเร่งด่วนตามที่ขอ
-            if (priorityFilter === 'sort_priority') {
-                filtered.sort((a, b) => {
-                    const pWeight = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
-                    if (pWeight[b.priority] !== pWeight[a.priority]) {
-                        return pWeight[b.priority] - pWeight[a.priority]; 
-                    }
-                    return new Date(b.dateTime) - new Date(a.dateTime);
-                });
-            } else {
-                // ถ้าไม่ได้เลือกจัดเรียง ให้เอาของใหม่ขึ้นก่อนเสมอ
-                filtered.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-            }
-
-            displayTickets(filtered);
+            // ระบบจัดเรียงแบบมืออาชีพ:
+            // 1) งานปักหมุดขึ้นก่อน เรียง 1 -> 10
+            // 2) ถ้าเลือกจัดเรียงความเร่งด่วน จะเรียงความเร่งด่วนภายในกลุ่มที่ไม่ได้ปักหมุด
+            // 3) ถ้าไม่ได้เลือกอะไร งานใหม่ขึ้นก่อน
+            displayTickets(sortTicketsProfessional(filtered));
         }
 
         function downloadFile(content, filename, contentType) {
@@ -523,10 +696,10 @@
         function exportToJSON() { if(tickets.length===0) return; downloadFile(JSON.stringify(tickets, null, 2), 'IT_Tickets.json', 'application/json'); }
         function exportToCSV() {
             if(tickets.length===0) return;
-            const headers = ['เลขที่ใบงาน', 'วันที่-เวลา', 'ชื่อผู้แจ้ง', 'แผนก', 'เบอร์โทร', 'อีเมล', 'อุปกรณ์', 'รหัสครุภัณฑ์', 'สถานที่', 'ปัญหา', 'ความเร่งด่วน', 'สถานะ', 'หมายเหตุ'];
+            const headers = ['ลำดับปักหมุด', 'เลขที่ใบงาน', 'วันที่-เวลา', 'ชื่อผู้แจ้ง', 'แผนก', 'เบอร์โทร', 'อีเมล', 'อุปกรณ์', 'รหัสครุภัณฑ์', 'สถานที่', 'ปัญหา', 'ความเร่งด่วน', 'สถานะ', 'หมายเหตุ'];
             let csvContent = '\uFEFF' + headers.join(',') + '\n';
             tickets.forEach(t => {
-                const row = [t.ticketNumber, t.dateTime, t.requesterName, t.department, t.phone, t.email, t.deviceType, t.assetNumber, t.location, t.problemDescription, t.priority, t.status, t.notes].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`);
+                const row = [normalizePinOrder(t.pinnedOrder), t.ticketNumber, t.dateTime, t.requesterName, t.department, t.phone, t.email, t.deviceType, t.assetNumber, t.location, t.problemDescription, t.priority, t.status, t.notes].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`);
                 csvContent += row.join(',') + '\n';
             });
             downloadFile(csvContent, 'IT_Tickets.csv', 'text/csv;charset=utf-8;');
