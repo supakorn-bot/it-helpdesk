@@ -128,37 +128,6 @@
             color: #fff !important;
             vertical-align: middle;
         }
-        .bottom-summary-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 16px;
-            margin-top: 18px;
-        }
-        .bottom-summary-title {
-            font-weight: 800;
-            color: #334155;
-            margin-bottom: 12px;
-        }
-        .bottom-summary-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 14px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-            height: 100%;
-        }
-        .bottom-summary-number {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #1e293b;
-            line-height: 1.1;
-        }
-        .bottom-summary-label {
-            color: #64748b;
-            font-weight: 700;
-            margin-top: 4px;
-        }
         /* Version 3.5 Final: Dashboard กดได้ แต่ตัวเลขด้านบนคงเป็นยอดรวมทั้งหมดเสมอ */
         .dashboard-filter-card {
             cursor: pointer;
@@ -404,20 +373,8 @@
                         </tfoot>
                     </table>
                 </div>
-
-                <div class="bottom-summary-box" id="bottomSummaryBox">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <div class="bottom-summary-title mb-0"><i class="bi bi-bar-chart-fill"></i> สรุปรายการที่กำลังแสดง</div>
-                        <span class="badge bg-light text-dark border px-3 py-2" id="bottomSummaryLabel">กำลังแสดง: ทั้งหมด</span>
-                    </div>
-                    <div class="row g-3 mt-1">
-                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomTotalTickets">0</div><div class="bottom-summary-label">ทั้งหมด</div></div></div>
-                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomPendingTickets">0</div><div class="bottom-summary-label">รอดำเนินการ</div></div></div>
-                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomProcessingTickets">0</div><div class="bottom-summary-label">กำลังดำเนินการ</div></div></div>
-                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomCompletedTickets">0</div><div class="bottom-summary-label">เสร็จสิ้น</div></div></div>
-                    </div>
-                </div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -558,15 +515,6 @@
             document.getElementById('processingTickets').innerText = sourceTickets.filter(t => t.status === 'processing').length;
             document.getElementById('completedTickets').innerText = sourceTickets.filter(t => t.status === 'completed').length;
         }
-
-        function updateBottomSummary(sourceTickets = tickets, label = 'ทั้งหมด') {
-            document.getElementById('bottomTotalTickets').innerText = sourceTickets.length;
-            document.getElementById('bottomPendingTickets').innerText = sourceTickets.filter(t => t.status === 'pending').length;
-            document.getElementById('bottomProcessingTickets').innerText = sourceTickets.filter(t => t.status === 'processing').length;
-            document.getElementById('bottomCompletedTickets').innerText = sourceTickets.filter(t => t.status === 'completed').length;
-            document.getElementById('bottomSummaryLabel').innerText = 'กำลังแสดง: ' + label + ' (' + sourceTickets.length + ' รายการ)';
-        }
-
         function collapseTicketForm() {
             const formCollapse = document.getElementById('ticketFormCollapse');
             if (formCollapse) bootstrap.Collapse.getOrCreateInstance(formCollapse).hide();
@@ -850,7 +798,6 @@
             document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + dateRange.label + ' (' + filtered.length + ' รายการ)';
             // Dashboard ด้านบนต้องคงเป็นยอดรวมทั้งหมด ไม่เปลี่ยนตามตัวกรองวันที่/สถานะ
             updateStats(tickets);
-            updateBottomSummary(filtered, dateRange.label);
             updateDashboardActiveCard(statusFilter);
             displayTickets(filtered);
         }
