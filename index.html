@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบใบงานแผนกไอที [PADUNSILPA GROUP]</title>
+    <title>ระบบใบงานแผนกไอที [PADUNSILPA GROUP] - V3.4 Final</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -791,15 +791,16 @@
             const statusFilter = document.getElementById('statusFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
             const dateRange = getDateRangeByFilter();
-            updateStatsCardActive(statusFilter);
 
-            let filtered = tickets.filter(t => {
+            // V3.4 FINAL FIX
+            // แยก 2 ชุดข้อมูล:
+            // 1) baseFiltered = ใช้คำนวณ Dashboard ด้านบน (ไม่นับ statusFilter) เพื่อให้ตัวเลขการ์ดไม่เพี้ยนตอนกดการ์ด
+            // 2) filtered = ใช้แสดงตารางจริง (นับ statusFilter ด้วย)
+            const baseFiltered = tickets.filter(t => {
                 const matchText = (t.requesterName || '').toLowerCase().includes(keyword) || 
                                   (t.department || '').toLowerCase().includes(keyword) || 
                                   (t.problemDescription || '').toLowerCase().includes(keyword);
-                
-                const matchStatus = (statusFilter === 'all') || (t.status === statusFilter);
-                
+
                 let matchPriority = true;
                 if (priorityFilter !== 'all' && priorityFilter !== 'sort_priority') {
                     matchPriority = (t.priority === priorityFilter);
@@ -812,7 +813,11 @@
                     if (dateRange.end && ticketDate > dateRange.end) matchDate = false;
                 }
 
-                return matchText && matchStatus && matchPriority && matchDate;
+                return matchText && matchPriority && matchDate;
+            });
+
+            let filtered = baseFiltered.filter(t => {
+                return (statusFilter === 'all') || (t.status === statusFilter);
             });
 
             if (priorityFilter === 'sort_priority') {
@@ -827,10 +832,20 @@
                 filtered.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
             }
 
-            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + dateRange.label + ' (' + filtered.length + ' รายการ)';
+            const statusTextMap = {
+                all: 'ทุกสถานะ',
+                pending: 'รอดำเนินการ',
+                processing: 'กำลังดำเนินการ',
+                completed: 'เสร็จสิ้น',
+                cancelled: 'ยกเลิก'
+            };
+            const statusLabel = statusTextMap[statusFilter] || 'ทุกสถานะ';
+            const labelText = dateRange.label + ' / ' + statusLabel;
+
+            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + labelText + ' (' + filtered.length + ' รายการ)';
             updateStatsCardActive(statusFilter);
-            updateStats(filtered);
-            updateBottomSummary(filtered, dateRange.label);
+            updateStats(baseFiltered);
+            updateBottomSummary(filtered, labelText);
             displayTickets(filtered);
         }
 
