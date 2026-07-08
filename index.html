@@ -128,7 +128,7 @@
             color: #fff !important;
             vertical-align: middle;
         }
-        /* Version 3.7 Final: Dashboard คงยอดรวม / ปุ่มเวลาไม่ติดตัวกรองสถานะ */
+        /* Version 3.8 Final: Dashboard เปลี่ยนตามช่วงเวลา และคลิกการ์ดกรองสถานะได้ */
         .dashboard-filter-card {
             cursor: pointer;
             transition: transform .18s ease, box-shadow .18s ease, outline .18s ease;
@@ -531,19 +531,12 @@
         }
 
         function filterByDashboardStatus(status) {
-            // Dashboard ด้านบนใช้กรองตามสถานะของตารางด้านล่าง
-            // และรีเซ็ตตัวกรองเวลาเป็นทั้งหมด เพื่อไม่ให้ผลลัพธ์สับสน
-            currentDateFilter = 'all';
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-            if (startDate) startDate.value = '';
-            if (endDate) endDate.value = '';
-            updateFilterButtons();
-
+            // Dashboard ด้านบนใช้เป็นตัวกรองสถานะของตารางด้านล่าง
+            // แต่ต้องไม่เปลี่ยนตัวกรองเวลา เช่น วันนี้ / สัปดาห์นี้ / เดือนนี้
             const statusFilter = document.getElementById('statusFilter');
             if (statusFilter) statusFilter.value = status;
-            updateDashboardActiveCard(status);
 
+            updateDashboardActiveCard(status);
             searchTickets();
             scrollToTicketTable();
         }
@@ -784,13 +777,13 @@
             const priorityFilter = document.getElementById('priorityFilter').value;
             const dateRange = getDateRangeByFilter();
 
-            let filtered = tickets.filter(t => {
+            // ชุดข้อมูลฐานสำหรับ Dashboard: นับตามช่วงเวลา + คำค้นหา + ความเร่งด่วน
+            // แต่ยังไม่กรองสถานะ เพื่อให้ตัวเลข 4 การ์ดด้านบนบอกภาพรวมของช่วงเวลานั้นจริง ๆ
+            let dashboardSource = tickets.filter(t => {
                 const matchText = (t.requesterName || '').toLowerCase().includes(keyword) || 
                                   (t.department || '').toLowerCase().includes(keyword) || 
                                   (t.problemDescription || '').toLowerCase().includes(keyword);
-                
-                const matchStatus = (statusFilter === 'all') || (t.status === statusFilter);
-                
+
                 let matchPriority = true;
                 if (priorityFilter !== 'all' && priorityFilter !== 'sort_priority') {
                     matchPriority = (t.priority === priorityFilter);
@@ -803,7 +796,12 @@
                     if (dateRange.end && ticketDate > dateRange.end) matchDate = false;
                 }
 
-                return matchText && matchStatus && matchPriority && matchDate;
+                return matchText && matchPriority && matchDate;
+            });
+
+            // ชุดข้อมูลสำหรับตาราง: ใช้ Dashboard source แล้วค่อยกรองสถานะเพิ่ม
+            let filtered = dashboardSource.filter(t => {
+                return (statusFilter === 'all') || (t.status === statusFilter);
             });
 
             if (priorityFilter === 'sort_priority') {
@@ -818,9 +816,17 @@
                 filtered.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
             }
 
-            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + dateRange.label + ' (' + filtered.length + ' รายการ)';
-            // Dashboard ด้านบนต้องคงเป็นยอดรวมทั้งหมด ไม่เปลี่ยนตามตัวกรองวันที่/สถานะ
-            updateStats(filtered);
+            const statusText = {
+                all: 'ทุกสถานะ',
+                pending: 'รอดำเนินการ',
+                processing: 'กำลังดำเนินการ',
+                completed: 'เสร็จสิ้น',
+                cancelled: 'ยกเลิก'
+            };
+            const label = statusFilter === 'all' ? dateRange.label : `${dateRange.label} / ${statusText[statusFilter] || statusFilter}`;
+
+            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + label + ' (' + filtered.length + ' รายการ)';
+            updateStats(dashboardSource);
             updateDashboardActiveCard(statusFilter);
             displayTickets(filtered);
         }
