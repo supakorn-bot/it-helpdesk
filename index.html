@@ -26,9 +26,6 @@
         .action-btn { padding: 5px 10px; margin: 2px; border-radius: 5px; border: none; cursor: pointer; transition: all 0.2s; }
         .action-btn:hover { transform: scale(1.1); }
         .stats-card { background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .stats-card.clickable { cursor: pointer; transition: all 0.2s ease; }
-        .stats-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.18); }
-        .stats-card.clickable.active-stat { outline: 3px solid rgba(102,126,234,0.35); }
         .icon-box { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; }
         .icon-box-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
         .icon-box-warning { background-color: rgba(255, 193, 7, 0.2); color: #d39e00; }
@@ -190,10 +187,10 @@
 
         <!-- Statistics -->
         <div class="row mb-4">
-            <div class="col-md-3"><div class="stats-card clickable active-stat" id="statAllCard" onclick="filterByStatusCard('all')" title="กดเพื่อดูทั้งหมด"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
-            <div class="col-md-3"><div class="stats-card clickable" id="statPendingCard" onclick="filterByStatusCard('pending')" title="กดเพื่อดูรอดำเนินการ"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
-            <div class="col-md-3"><div class="stats-card clickable" id="statProcessingCard" onclick="filterByStatusCard('processing')" title="กดเพื่อดูกำลังดำเนินการ"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
-            <div class="col-md-3"><div class="stats-card clickable" id="statCompletedCard" onclick="filterByStatusCard('completed')" title="กดเพื่อดูเสร็จสิ้น"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
         </div>
 
         <!-- Form Card Version 3: ย่อ/ขยายได้ -->
@@ -786,10 +783,6 @@
             const keyword = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
-            document.querySelectorAll('.stats-card.clickable').forEach(card => card.classList.remove('active-stat'));
-            const cardMap = { all: 'statAllCard', pending: 'statPendingCard', processing: 'statProcessingCard', completed: 'statCompletedCard' };
-            const currentCard = document.getElementById(cardMap[statusFilter] || 'statAllCard');
-            if (currentCard) currentCard.classList.add('active-stat');
             const dateRange = getDateRangeByFilter();
 
             let filtered = tickets.filter(t => {
@@ -830,27 +823,6 @@
             updateStats(filtered);
             updateBottomSummary(filtered, dateRange.label);
             displayTickets(filtered);
-        }
-
-
-        function filterByStatusCard(status) {
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) statusFilter.value = status === 'all' ? 'all' : status;
-
-            document.querySelectorAll('.stats-card.clickable').forEach(card => card.classList.remove('active-stat'));
-            const activeMap = {
-                all: 'statAllCard',
-                pending: 'statPendingCard',
-                processing: 'statProcessingCard',
-                completed: 'statCompletedCard'
-            };
-            const activeCard = document.getElementById(activeMap[status]);
-            if (activeCard) activeCard.classList.add('active-stat');
-
-            searchTickets();
-
-            const table = document.querySelector('.table-container');
-            if (table) table.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function downloadFile(content, filename, contentType) {
