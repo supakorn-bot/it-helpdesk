@@ -128,7 +128,7 @@
             color: #fff !important;
             vertical-align: middle;
         }
-        /* Version 3.5 Final: Dashboard กดได้ แต่ตัวเลขด้านบนคงเป็นยอดรวมทั้งหมดเสมอ */
+        /* Version 3.7 Final: Dashboard คงยอดรวม / ปุ่มเวลาไม่ติดตัวกรองสถานะ */
         .dashboard-filter-card {
             cursor: pointer;
             transition: transform .18s ease, box-shadow .18s ease, outline .18s ease;
@@ -531,8 +531,19 @@
         }
 
         function filterByDashboardStatus(status) {
+            // Dashboard ด้านบนใช้กรองตามสถานะของตารางด้านล่าง
+            // และรีเซ็ตตัวกรองเวลาเป็นทั้งหมด เพื่อไม่ให้ผลลัพธ์สับสน
+            currentDateFilter = 'all';
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            if (startDate) startDate.value = '';
+            if (endDate) endDate.value = '';
+            updateFilterButtons();
+
             const statusFilter = document.getElementById('statusFilter');
             if (statusFilter) statusFilter.value = status;
+            updateDashboardActiveCard(status);
+
             searchTickets();
             scrollToTicketTable();
         }
@@ -682,6 +693,13 @@
 
         function setDateFilter(mode) {
             currentDateFilter = mode;
+
+            // เมื่อกดตัวกรองเวลา ให้แสดงทุกสถานะก่อนเสมอ
+            // เพื่อไม่ให้ติดค่าจากการกด Dashboard ด้านบนก่อนหน้า
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) statusFilter.value = 'all';
+            updateDashboardActiveCard('all');
+
             updateFilterButtons();
             searchTickets();
         }
@@ -690,6 +708,11 @@
             currentDateFilter = 'all';
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) statusFilter.value = 'all';
+            updateDashboardActiveCard('all');
+
             updateFilterButtons();
             searchTickets();
         }
