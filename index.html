@@ -33,59 +33,13 @@
         .icon-box-success { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
         .stats-number { font-size: 2.5rem; font-weight: bold; color: #333; line-height: 1.2; }
         .stats-label { font-weight: 600; color: #6c757d; }
-        .stats-card {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            height: 100%;
-            border: 3px solid transparent;
-        }
-        .stats-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 24px rgba(0,0,0,0.16);
-        }
-        .stats-card.active-filter {
-            border-color: #2410d8;
-            box-shadow: 0 0 0 4px rgba(36, 16, 216, 0.12), 0 10px 24px rgba(0,0,0,0.16);
-        }
-        .quick-action-row {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-top: -6px;
-        }
-        .report-job-btn {
-            background: #ffffff;
-            color: #dc2626;
-            border: 6px solid #2410d8;
-            border-radius: 6px;
-            padding: 20px 42px;
-            font-size: 1.8rem;
-            line-height: 1.1;
-            font-weight: 900;
-            letter-spacing: 0.2px;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-            transition: all 0.2s ease;
-        }
-        .report-job-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-        }
-        .report-job-btn i {
-            margin-right: 8px;
-        }
-        @media (max-width: 767px) {
-            .quick-action-row {
-                justify-content: stretch;
-            }
-            .report-job-btn {
-                width: 100%;
-                font-size: 1.45rem;
-                padding: 18px 24px;
-            }
-        }
         .required::after { content: " *"; color: red; }
         .has-attachment { color: #0d6efd; font-size: 1.2rem; }
         #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; display: none; }
+        .filter-toolbar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .filter-toolbar .btn { font-weight: 600; border-radius: 8px; }
+        .filter-toolbar .btn.active { box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25); }
+        .date-filter-label { font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; }
         
         #previewContainer { display: none; position: relative; max-width: fit-content; margin-top: 15px; }
         #imagePreview { max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px dashed #ccc; padding: 5px; background: #fff;}
@@ -106,40 +60,109 @@
             background-color: #f8fafc !important; /* สีไฮไลท์เวลาเอาเมาส์ชี้แถว */
         }
 
-        
+
         /* ========================================= */
-        /* ระบบปักหมุดงานแบบมืออาชีพ */
+        /* Version 2.1: แยกคอลัมน์ ความเร่งด่วน / สถานะ / จัดการ ให้ชัด */
         /* ========================================= */
-        .pinned-row td {
-            background-color: #fff8e1 !important;
-            border-top: 3px solid #f59f00 !important;
+        .it-ticket-table {
+            min-width: 1250px;
+            table-layout: fixed;
         }
-        .pin-badge {
+        .it-ticket-table th,
+        .it-ticket-table td {
+            vertical-align: middle !important;
+        }
+        .col-date { width: 90px; }
+        .col-name { width: 160px; }
+        .col-dept { width: 90px; }
+        .col-device { width: 110px; }
+        .col-problem { width: auto; }
+        .col-priority { width: 135px; text-align: center; }
+        .col-status { width: 170px; text-align: center; }
+        .col-action { width: 125px; text-align: center; }
+        .badge,
+        .badge-status {
+            white-space: nowrap;
+        }
+        .badge-status {
+            min-width: 135px;
+            padding: 10px 14px;
+            line-height: 1.1;
+        }
+        .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            max-width: 90px;
+            margin: 0 auto;
+        }
+        .action-group .action-btn {
+            width: 36px;
+            height: 36px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            background: linear-gradient(135deg, #ffca2c 0%, #ff922b 100%);
-            color: #212529;
+            justify-content: center;
+            margin: 0;
+        }
+
+        /* ========================================= */
+        /* Version 3: ฟอร์มย่อ/ขยาย, Sticky Header, Summary ล่าง */
+        /* ========================================= */
+        .collapse-toggle-btn {
+            color: #fff;
+            text-decoration: none;
             font-weight: 700;
-            border-radius: 999px;
-            padding: 4px 9px;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.35);
-            margin-bottom: 6px;
+            font-size: 1.25rem;
+            padding: 0;
         }
-        .btn-pin-active {
-            background: #ffc107 !important;
-            color: #212529 !important;
-            border: none;
+        .collapse-toggle-btn:hover { color: #fff; opacity: 0.9; }
+        .form-helper-text { font-size: 0.9rem; opacity: 0.9; }
+        .sticky-table-header th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
         }
-        .btn-pin-normal {
-            background: #343a40 !important;
+        .table-footer-header th {
+            background: #212529 !important;
             color: #fff !important;
-            border: none;
+            vertical-align: middle;
         }
-        .pin-help-text {
-            font-size: 0.85rem;
-            color: #6c757d;
+        .bottom-summary-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 18px;
+        }
+        .bottom-summary-title {
+            font-weight: 800;
+            color: #334155;
+            margin-bottom: 12px;
+        }
+        .bottom-summary-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            height: 100%;
+        }
+        .bottom-summary-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1.1;
+        }
+        .bottom-summary-label {
+            color: #64748b;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        @media (max-width: 768px) {
+            .collapse-toggle-btn { font-size: 1.05rem; }
+            .stats-number { font-size: 2rem; }
+            .filter-toolbar .btn { padding-left: 8px; padding-right: 8px; }
         }
 
     </style>
@@ -159,53 +182,34 @@
             <h1 class="text-white mb-2">
                 <i class="bi bi-tools"></i> ระบบใบงานแผนกไอที [PADUNSILPA GROUP]
             </h1>
-            <p class="text-white">ติดต่อกรณ์ไอที Tel: 085-989-1944 หรือ LINE ID: help.me.korn</p>
+            <p class="text-white">ติดต่อกรณ์ไอที Tel: 063 886 8889 หรือ LINE ID: help.me.korn</p>
         </div>
 
-        <!-- Statistics: คลิกเพื่อกรองรายการตามสถานะ -->
-        <div class="row mb-3 g-3">
-            <div class="col-md-6 col-xl-3">
-                <div class="stats-card stat-filter-card" data-status="all" onclick="setStatusFilter('all')" role="button" tabindex="0" aria-pressed="true" title="คลิกเพื่อดูงานทั้งหมด">
-                    <div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div>
-                    <div class="stats-number" id="totalTickets">0</div>
-                    <div class="stats-label">ทั้งหมด</div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="stats-card stat-filter-card" data-status="pending" onclick="setStatusFilter('pending')" role="button" tabindex="0" aria-pressed="false" title="คลิกเพื่อดูงานรอดำเนินการ">
-                    <div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div>
-                    <div class="stats-number" id="pendingTickets">0</div>
-                    <div class="stats-label">รอดำเนินการ</div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="stats-card stat-filter-card" data-status="processing" onclick="setStatusFilter('processing')" role="button" tabindex="0" aria-pressed="false" title="คลิกเพื่อดูงานกำลังดำเนินการ">
-                    <div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div>
-                    <div class="stats-number" id="processingTickets">0</div>
-                    <div class="stats-label">กำลังดำเนินการ</div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="stats-card stat-filter-card" data-status="completed" onclick="setStatusFilter('completed')" role="button" tabindex="0" aria-pressed="false" title="คลิกเพื่อดูงานเสร็จสิ้น">
-                    <div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div>
-                    <div class="stats-number" id="completedTickets">0</div>
-                    <div class="stats-label">เสร็จสิ้น</div>
-                </div>
-            </div>
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
         </div>
 
-        <!-- ปุ่มแจ้งงาน: เลื่อนกลับขึ้นไปที่ฟอร์ม -->
-        <div class="quick-action-row mb-4">
-            <button type="button" class="report-job-btn" onclick="goToReportForm()" title="คลิกเพื่อแจ้งงานใหม่">
-                <i class="bi bi-megaphone-fill"></i>แจ้งงาน
-            </button>
-        </div>
-
-        <!-- Form Card -->
-        <div class="card" id="ticketFormCard">
-            <div class="card-header"><h3 class="mb-0"><i class="bi bi-file-earmark-plus"></i> แบบฟอร์มใบแจ้งงานแผนกไอที</h3></div>
-            <div class="card-body p-4">
-                <form id="repairForm">
+        <!-- Form Card Version 3: ย่อ/ขยายได้ -->
+        <div class="card">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <button
+                    class="btn btn-link collapse-toggle-btn"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ticketFormCollapse"
+                    aria-expanded="false"
+                    aria-controls="ticketFormCollapse">
+                    <i class="bi bi-plus-circle"></i> แจ้งงานใหม่ / ย่อ-ขยายฟอร์ม
+                </button>
+                <span class="form-helper-text">กดเพื่อเปิดฟอร์มแจ้งงาน หรือซ่อนฟอร์มให้ดูรายการงานง่ายขึ้น</span>
+            </div>
+            <div id="ticketFormCollapse" class="collapse">
+                <div class="card-body p-4">
+                    <form id="repairForm">
                     <div class="row">
                         <div class="col-md-12 mb-3"><h5 class="text-primary"><i class="bi bi-person-circle"></i> ข้อมูลผู้แจ้ง</h5><hr></div>
                         <div class="col-md-6 mb-3"><label class="form-label required">ชื่อผู้แจ้ง</label><input type="text" class="form-control" id="requesterName" required placeholder="ใส่ชื่อที่เป็นที่รู้จัก หรือชื่อเล่นได้ครับ"></div>
@@ -268,12 +272,13 @@
                         <button type="button" class="btn btn-secondary" onclick="resetForm()"><i class="bi bi-x-circle"></i> ล้างข้อมูลฟอร์ม</button>
                         <button type="submit" class="btn btn-primary" id="submitBtn"><i class="bi bi-save"></i> บันทึกใบแจ้งซ่อม</button>
                     </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
 
         <!-- List Card -->
-        <div class="card" id="ticketListCard">
+        <div class="card" id="ticketTableCard">
             <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <h3 class="mb-0"><i class="bi bi-list-ul"></i> รายการใบแจ้งซ่อมทั้งหมด</h3>
                 <div>
@@ -284,6 +289,37 @@
             </div>
             <div class="card-body">
                 
+                <!-- Filter Bar Version 2: เลือกดูตามช่วงเวลา -->
+                <div class="filter-toolbar">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-lg-2 col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100 active" id="filterAllBtn" onclick="setDateFilter('all')"><i class="bi bi-list-ul"></i> ทั้งหมด</button>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" id="filterTodayBtn" onclick="setDateFilter('today')"><i class="bi bi-calendar-day"></i> วันนี้</button>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" id="filterWeekBtn" onclick="setDateFilter('week')"><i class="bi bi-calendar-week"></i> สัปดาห์นี้</button>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <button type="button" class="btn btn-outline-primary w-100" id="filterMonthBtn" onclick="setDateFilter('month')"><i class="bi bi-calendar-month"></i> เดือนนี้</button>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <div class="date-filter-label">จากวันที่</div>
+                            <input type="date" id="startDate" class="form-control" onchange="setDateFilter('custom')">
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <div class="date-filter-label">ถึงวันที่</div>
+                            <input type="date" id="endDate" class="form-control" onchange="setDateFilter('custom')">
+                        </div>
+                        <div class="col-12 d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-primary" onclick="setDateFilter('custom')"><i class="bi bi-search"></i> ค้นหาตามช่วงวันที่</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetDateFilter()"><i class="bi bi-arrow-counterclockwise"></i> ล้างตัวกรองเวลา</button>
+                            <span class="badge bg-light text-dark border align-self-center px-3 py-2" id="filterSummary">กำลังแสดง: ทั้งหมด</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row mb-3">
                     <div class="col-md-6 mb-2 mb-md-0">
                         <input type="text" class="form-control" id="searchInput" placeholder="🔍 ค้นหา... (ชื่อ, แผนก, ปัญหา)" onkeyup="searchTickets()">
@@ -313,14 +349,58 @@
 
                 <div class="table-container">
                     <!-- เอา align-middle ออก เพื่อให้ CSS vertical-align: top ทำงานได้เต็มที่ -->
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                            <tr><th>วันที่แจ้ง</th><th>ผู้แจ้ง</th><th>แผนก</th><th>อุปกรณ์</th><th>ปัญหา</th><th>ความเร่งด่วน</th><th class="text-center">สถานะ</th><th>จัดการ</th></tr>
+                    <table class="table table-striped it-ticket-table">
+                        <colgroup>
+                            <col class="col-date">
+                            <col class="col-name">
+                            <col class="col-dept">
+                            <col class="col-device">
+                            <col class="col-problem">
+                            <col class="col-priority">
+                            <col class="col-status">
+                            <col class="col-action">
+                        </colgroup>
+                        <thead class="table-dark sticky-table-header">
+                            <tr>
+                                <th>วันที่<br>แจ้ง</th>
+                                <th>ผู้แจ้ง</th>
+                                <th>แผนก</th>
+                                <th>อุปกรณ์</th>
+                                <th>ปัญหา</th>
+                                <th class="text-center">ความเร่ง<br>ด่วน</th>
+                                <th class="text-center">สถานะ</th>
+                                <th class="text-center">จัดการ</th>
+                            </tr>
                         </thead>
                         <tbody id="ticketList">
                             <!-- ข้อมูลจะถูกโหลดมาแสดงที่นี่ -->
                         </tbody>
+                        <tfoot class="table-footer-header">
+                            <tr>
+                                <th>วันที่<br>แจ้ง</th>
+                                <th>ผู้แจ้ง</th>
+                                <th>แผนก</th>
+                                <th>อุปกรณ์</th>
+                                <th>ปัญหา</th>
+                                <th class="text-center">ความเร่ง<br>ด่วน</th>
+                                <th class="text-center">สถานะ</th>
+                                <th class="text-center">จัดการ</th>
+                            </tr>
+                        </tfoot>
                     </table>
+                </div>
+
+                <div class="bottom-summary-box" id="bottomSummaryBox">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="bottom-summary-title mb-0"><i class="bi bi-bar-chart-fill"></i> สรุปรายการที่กำลังแสดง</div>
+                        <span class="badge bg-light text-dark border px-3 py-2" id="bottomSummaryLabel">กำลังแสดง: ทั้งหมด</span>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomTotalTickets">0</div><div class="bottom-summary-label">ทั้งหมด</div></div></div>
+                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomPendingTickets">0</div><div class="bottom-summary-label">รอดำเนินการ</div></div></div>
+                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomProcessingTickets">0</div><div class="bottom-summary-label">กำลังดำเนินการ</div></div></div>
+                        <div class="col-6 col-lg-3"><div class="bottom-summary-card"><div class="bottom-summary-number" id="bottomCompletedTickets">0</div><div class="bottom-summary-label">เสร็จสิ้น</div></div></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -331,166 +411,18 @@
       <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="bi bi-card-text"></i> รายละเอียดใบแจ้งซ่อม</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="ticketModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิดหน้าต่าง</button></div></div></div>
     </div>
 
-
-    <!-- Modal สำหรับปักหมุดงาน -->
-    <div class="modal fade" id="pinTicketModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title"><i class="bi bi-pin-angle-fill"></i> ตั้งค่าปักหมุดงาน</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="pinTicketId">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">ลำดับปักหมุด</label>
-                    <select class="form-select" id="pinOrderSelect">
-                        <option value="0">ไม่ปักหมุด / ยกเลิกปักหมุด</option>
-                        <option value="1">📌 ลำดับ 1 - สำคัญที่สุด</option>
-                        <option value="2">📌 ลำดับ 2</option>
-                        <option value="3">📌 ลำดับ 3</option>
-                        <option value="4">📌 ลำดับ 4</option>
-                        <option value="5">📌 ลำดับ 5</option>
-                        <option value="6">📌 ลำดับ 6</option>
-                        <option value="7">📌 ลำดับ 7</option>
-                        <option value="8">📌 ลำดับ 8</option>
-                        <option value="9">📌 ลำดับ 9</option>
-                        <option value="10">📌 ลำดับ 10</option>
-                    </select>
-                    <div class="pin-help-text mt-2">
-                        งานที่ปักหมุดจะอยู่บนสุดเสมอ เรียงจาก 1 ไป 10 และบันทึกขึ้น Server
-                    </div>
-                </div>
-                <div class="alert alert-warning mb-0">
-                    <i class="bi bi-shield-lock"></i> เฉพาะ Admin เท่านั้นที่แก้ไขลำดับปักหมุดได้
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                <button type="button" class="btn btn-warning fw-bold" onclick="savePinnedOrder()">
-                    <i class="bi bi-save"></i> บันทึกปักหมุด
-                </button>
-            </div>
-        </div>
-      </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylW3IFKBa_V6X1zGni4WA0WztpaIa5rP1UHjWw1DFZ-d5B9e9ExXDJ2Ev_vz_h_buL/exec';
+       const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylW3IFKBa_V6X1zGni4WA0WztpaIa5rP1UHjWw1DFZ-d5B9e9ExXDJ2Ev_vz_h_buL/exec';
         const ADMIN_PASS = "dfsK@2012";
 
         let tickets = [];
+        let currentDateFilter = 'all';
         let editingTicketId = null;
         let currentImageBase64 = null; 
 
-        function normalizePinOrder(value) {
-            const n = parseInt(value, 10);
-            return Number.isInteger(n) && n >= 1 && n <= 10 ? n : 0;
-        }
-
-        function adminLogin() {
-            const user = prompt("🔒 กรุณาใส่ Username:");
-            if (user !== "admin") {
-                alert("❌ Username ไม่ถูกต้อง!");
-                return false;
-            }
-
-            const pass = prompt("🔑 กรุณาใส่ Password:");
-            if (pass !== ADMIN_PASS) {
-                alert("❌ Password ไม่ถูกต้อง!");
-                return false;
-            }
-
-            return true;
-        }
-
-        function sortTicketsProfessional(list) {
-            return list.sort((a, b) => {
-                const aPin = normalizePinOrder(a.pinnedOrder);
-                const bPin = normalizePinOrder(b.pinnedOrder);
-
-                // งานปักหมุดขึ้นก่อนเสมอ และเรียง 1 -> 10
-                if (aPin && bPin && aPin !== bPin) return aPin - bPin;
-                if (aPin && !bPin) return -1;
-                if (!aPin && bPin) return 1;
-
-                // ถ้าเลือกเรียงความเร่งด่วน ให้ให้ความเร่งด่วนมีผลหลังจากปักหมุด
-                const priorityFilter = document.getElementById('priorityFilter')?.value;
-                if (priorityFilter === 'sort_priority') {
-                    const pWeight = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
-                    const pa = pWeight[a.priority] || 0;
-                    const pb = pWeight[b.priority] || 0;
-                    if (pb !== pa) return pb - pa;
-                }
-
-                // ค่าเริ่มต้น: งานใหม่ขึ้นก่อน
-                return new Date(b.dateTime) - new Date(a.dateTime);
-            });
-        }
-
-        function openPinModal(id) {
-            if (!adminLogin()) return;
-
-            const ticket = tickets.find(t => t.id === id);
-            if (!ticket) return alert("ไม่พบใบงานนี้");
-
-            document.getElementById('pinTicketId').value = id;
-            document.getElementById('pinOrderSelect').value = String(normalizePinOrder(ticket.pinnedOrder));
-
-            new bootstrap.Modal(document.getElementById('pinTicketModal')).show();
-        }
-
-        function savePinnedOrder() {
-            const id = document.getElementById('pinTicketId').value;
-            const pinNumber = normalizePinOrder(document.getElementById('pinOrderSelect').value);
-            const ticket = tickets.find(t => t.id === id);
-
-            if (!ticket) return alert("ไม่พบใบงานนี้");
-
-            const updatedTicket = {
-                ...ticket,
-                action: "update",
-                pinnedOrder: pinNumber
-            };
-
-            showLoader(pinNumber ? `กำลังปักหมุดลำดับ ${pinNumber} ขึ้น Server...` : "กำลังยกเลิกปักหมุดขึ้น Server...");
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(updatedTicket)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('pinTicketModal'));
-                    if (modal) modal.hide();
-
-                    alert(pinNumber ? `✅ ปักหมุดลำดับ ${pinNumber} สำเร็จ!` : "✅ ยกเลิกปักหมุดสำเร็จ!");
-                    loadTicketsFromDB();
-                } else {
-                    alert('❌ บันทึกปักหมุดไม่สำเร็จ: ' + (result.error || 'ไม่ทราบสาเหตุ'));
-                    hideLoader();
-                }
-            })
-            .catch(error => {
-                console.error("Pin error:", error);
-                ticket.pinnedOrder = pinNumber;
-                searchTickets();
-                hideLoader();
-                alert("⚠️ หน้าเว็บปักหมุดแล้ว แต่ Server อาจยังไม่บันทึกค่า pinnedOrder\nถ้ารีเฟรชแล้วหมุดหาย ต้องเพิ่ม field pinnedOrder ใน Apps Script / Google Sheet");
-            });
-        }
-
-
-        document.addEventListener('DOMContentLoaded', function() {
-            bindStatCardKeyboardEvents();
-            updateActiveStatCard('all');
-            loadTicketsFromDB();
-        });
-
+        document.addEventListener('DOMContentLoaded', loadTicketsFromDB);
 
         function showLoader(text) {
             document.getElementById('loaderText').innerText = text;
@@ -499,52 +431,6 @@
 
         function hideLoader() {
             document.getElementById('loaderOverlay').style.display = 'none';
-        }
-
-        function bindStatCardKeyboardEvents() {
-            document.querySelectorAll('.stat-filter-card').forEach(card => {
-                card.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setStatusFilter(card.dataset.status || 'all');
-                    }
-                });
-            });
-        }
-
-        function updateActiveStatCard(status) {
-            document.querySelectorAll('.stat-filter-card').forEach(card => {
-                const isActive = (card.dataset.status || 'all') === status;
-                card.classList.toggle('active-filter', isActive);
-                card.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            });
-        }
-
-        function setStatusFilter(status) {
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) {
-                statusFilter.value = status;
-            }
-
-            updateActiveStatCard(status);
-            searchTickets();
-
-            const listCard = document.getElementById('ticketListCard');
-            if (listCard) {
-                listCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        function goToReportForm() {
-            const formCard = document.getElementById('ticketFormCard');
-            if (formCard) {
-                formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            setTimeout(() => {
-                const firstInput = document.getElementById('requesterName');
-                if (firstInput) firstInput.focus();
-            }, 450);
         }
 
         function handleImageUpload(event) {
@@ -585,7 +471,6 @@
                 .then(data => {
                     tickets = data || [];
                     searchTickets();
-                    updateStats();
                     hideLoader();
                 })
                 .catch(error => {
@@ -614,8 +499,7 @@
                 priority: document.getElementById('priority').value,
                 status: document.getElementById('status').value,
                 notes: document.getElementById('notes').value,
-                attachedImage: currentImageBase64 === "deleted" ? "" : currentImageBase64,
-                pinnedOrder: editingTicketId ? normalizePinOrder(tickets.find(t => t.id === editingTicketId)?.pinnedOrder) : 0
+                attachedImage: currentImageBase64 === "deleted" ? "" : currentImageBase64 
             };
 
             showLoader(editingTicketId ? "กำลังอัปเดตข้อมูลขึ้น Server..." : "กำลังบันทึกและอัปโหลดข้อมูล...");
@@ -630,7 +514,9 @@
                 if(result.success) {
                     alert('✅ บันทึกข้อมูลสำเร็จ!');
                     resetForm();
+                    collapseTicketForm();
                     loadTicketsFromDB();
+                    setTimeout(scrollToTicketTable, 400);
                 } else {
                     alert('❌ เกิดข้อผิดพลาดในการบันทึก: ' + result.error);
                     hideLoader();
@@ -651,11 +537,34 @@
             document.getElementById('status').value = 'pending';
         }
 
-        function updateStats() {
-            document.getElementById('totalTickets').innerText = tickets.length;
-            document.getElementById('pendingTickets').innerText = tickets.filter(t => t.status === 'pending').length;
-            document.getElementById('processingTickets').innerText = tickets.filter(t => t.status === 'processing').length;
-            document.getElementById('completedTickets').innerText = tickets.filter(t => t.status === 'completed').length;
+        function updateStats(sourceTickets = tickets) {
+            document.getElementById('totalTickets').innerText = sourceTickets.length;
+            document.getElementById('pendingTickets').innerText = sourceTickets.filter(t => t.status === 'pending').length;
+            document.getElementById('processingTickets').innerText = sourceTickets.filter(t => t.status === 'processing').length;
+            document.getElementById('completedTickets').innerText = sourceTickets.filter(t => t.status === 'completed').length;
+        }
+
+        function updateBottomSummary(sourceTickets = tickets, label = 'ทั้งหมด') {
+            document.getElementById('bottomTotalTickets').innerText = sourceTickets.length;
+            document.getElementById('bottomPendingTickets').innerText = sourceTickets.filter(t => t.status === 'pending').length;
+            document.getElementById('bottomProcessingTickets').innerText = sourceTickets.filter(t => t.status === 'processing').length;
+            document.getElementById('bottomCompletedTickets').innerText = sourceTickets.filter(t => t.status === 'completed').length;
+            document.getElementById('bottomSummaryLabel').innerText = 'กำลังแสดง: ' + label + ' (' + sourceTickets.length + ' รายการ)';
+        }
+
+        function collapseTicketForm() {
+            const formCollapse = document.getElementById('ticketFormCollapse');
+            if (formCollapse) bootstrap.Collapse.getOrCreateInstance(formCollapse).hide();
+        }
+
+        function showTicketForm() {
+            const formCollapse = document.getElementById('ticketFormCollapse');
+            if (formCollapse) bootstrap.Collapse.getOrCreateInstance(formCollapse).show();
+        }
+
+        function scrollToTicketTable() {
+            const target = document.getElementById('ticketTableCard');
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function generateTicketId() { return 'TICKET_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
@@ -676,7 +585,7 @@
 
             const html = filteredTickets.map(ticket => {
                 const date = new Date(ticket.dateTime);
-                const formattedDate = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                const formattedDate = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) + '<br><small class="text-muted">' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.</small>';
                 const priorityBadge = { 'urgent': '<span class="badge badge-urgent">เร่งด่วนมาก</span>', 'high': '<span class="badge badge-high">เร่งด่วน</span>', 'medium': '<span class="badge badge-medium">ปานกลาง</span>', 'low': '<span class="badge badge-low">ต่ำ</span>' };
                 const statusBadge = {
                     'pending': '<span class="badge-status bg-warning text-dark"><i class="bi bi-clock-history"></i> รอดำเนินการ</span>',
@@ -687,23 +596,21 @@
 
                 const hasImage = (ticket.attachedImage && ticket.attachedImage.indexOf('http') === 0) ? `<br><a href="${ticket.attachedImage}" target="_blank" class="text-decoration-none mt-2 d-inline-block"><i class="bi bi-paperclip has-attachment" title="ดูรูปภาพแนบ"></i> มีรูปภาพแนบ</a>` : '';
 
-                const pinOrder = normalizePinOrder(ticket.pinnedOrder);
-                const pinBadge = pinOrder ? `<span class="pin-badge"><i class="bi bi-pin-angle-fill"></i> ปักหมุด #${pinOrder}</span><br>` : '';
-
                 return `
-                    <tr class="${pinOrder ? 'pinned-row' : ''}">
+                    <tr>
                         <td><small>${formattedDate}</small></td>
-                        <td>${pinBadge}${ticket.requesterName}</td>
+                        <td>${ticket.requesterName}</td>
                         <td>${ticket.department}</td>
                         <td>${ticket.deviceType}</td>
                         <td style="white-space: pre-line;">${ticket.problemDescription} ${hasImage}</td>
-                        <td>${priorityBadge[ticket.priority]}</td>
+                        <td class="text-center">${priorityBadge[ticket.priority]}</td>
                         <td class="text-center">${statusBadge[ticket.status]}</td>
-                        <td style="min-width: 160px;">
-                            <button class="action-btn btn-sm ${pinOrder ? 'btn-pin-active' : 'btn-pin-normal'}" onclick="openPinModal('${ticket.id}')" title="ปักหมุด / จัดลำดับ"><i class="bi bi-pin-angle-fill"></i></button>
-                            <button class="action-btn btn-sm btn-primary text-white" onclick="viewTicket('${ticket.id}')" title="ดูรายละเอียด"><i class="bi bi-eye"></i></button>
-                            <button class="action-btn btn-sm btn-warning" onclick="editTicket('${ticket.id}')" title="แก้ไข"><i class="bi bi-pencil"></i></button>
-                            <button class="action-btn btn-sm btn-danger" onclick="deleteTicket('${ticket.id}')" title="ลบ"><i class="bi bi-trash"></i></button>
+                        <td class="text-center">
+                            <div class="action-group">
+                                <button class="action-btn btn-sm btn-primary text-white" onclick="viewTicket('${ticket.id}')" title="ดูรายละเอียด"><i class="bi bi-eye"></i></button>
+                                <button class="action-btn btn-sm btn-warning" onclick="editTicket('${ticket.id}')" title="แก้ไข"><i class="bi bi-pencil"></i></button>
+                                <button class="action-btn btn-sm btn-danger" onclick="deleteTicket('${ticket.id}')" title="ลบ"><i class="bi bi-trash"></i></button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -723,6 +630,7 @@
             }
 
             document.getElementById('ticketModalBody').innerHTML = `
+                <div class="row mb-2"><div class="col-6"><strong>📅 วันที่แจ้ง:</strong> ${new Date(t.dateTime).toLocaleString('th-TH')}</div><div class="col-6"><strong>เลขที่ใบงาน:</strong> ${t.ticketNumber || '-'}</div></div>
                 <div class="row mb-2"><div class="col-6"><strong>👤 ผู้แจ้ง:</strong> ${t.requesterName}</div><div class="col-6"><strong>🏢 แผนก:</strong> ${t.department}</div></div>
                 <div class="row mb-2"><div class="col-6"><strong>📞 ติดต่อ:</strong> ${t.phone || '-'}</div><div class="col-6"><strong>✉️ อีเมล:</strong> ${t.email || '-'}</div></div><hr>
                 <div class="row mb-2"><div class="col-6"><strong>💻 ประเภท:</strong> ${t.deviceType}</div><div class="col-6"><strong>🏷️ รหัสครุภัณฑ์:</strong> ${t.assetNumber || '-'}</div></div>
@@ -736,7 +644,8 @@
         }
 
         function editTicket(id) {
-            if (!adminLogin()) return;
+            const user = prompt("🔒 กรุณาใส่ Username:"); if (user !== "admin") return alert("❌ Username ไม่ถูกต้อง!");
+            const pass = prompt("🔑 กรุณาใส่ Password:"); if (pass !== ADMIN_PASS) return alert("❌ Password ไม่ถูกต้อง!");
 
             const t = tickets.find(t => t.id === id); if (!t) return;
 
@@ -763,11 +672,13 @@
             }
 
             document.getElementById('submitBtn').innerHTML = '<i class="bi bi-save"></i> อัปเดตใบแจ้งซ่อม';
-            goToReportForm();
+            showTicketForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function deleteTicket(id) {
-            if (!adminLogin()) return;
+            const user = prompt("🔒 กรุณาใส่ Username:"); if (user !== "admin") return alert("❌ Username ไม่ถูกต้อง!");
+            const pass = prompt("🔑 กรุณาใส่ Password:"); if (pass !== ADMIN_PASS) return alert("❌ Password ไม่ถูกต้อง!");
 
             if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบใบแจ้งซ่อมนี้?')) {
                 showLoader("กำลังลบข้อมูลออกจาก Server...");
@@ -780,7 +691,8 @@
         }
 
         function clearAllData() {
-            if (!adminLogin()) return;
+            const user = prompt("🔒 กรุณาใส่ Username:"); if (user !== "admin") return alert("❌ Username ไม่ถูกต้อง!");
+            const pass = prompt("🔑 กรุณาใส่ Password:"); if (pass !== ADMIN_PASS) return alert("❌ Password ไม่ถูกต้อง!");
 
             if(confirm('⚠️ อันตราย! คุณต้องการล้างข้อมูล "ทั้งหมด" ออกจากเซิร์ฟเวอร์ใช่หรือไม่?')) {
                 showLoader("กำลังล้างข้อมูลทั้งหมดบน Server...");
@@ -792,12 +704,86 @@
             }
         }
 
+        function setDateFilter(mode) {
+            currentDateFilter = mode;
+            updateFilterButtons();
+            searchTickets();
+        }
+
+        function resetDateFilter() {
+            currentDateFilter = 'all';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            updateFilterButtons();
+            searchTickets();
+        }
+
+        function updateFilterButtons() {
+            const map = {
+                all: 'filterAllBtn',
+                today: 'filterTodayBtn',
+                week: 'filterWeekBtn',
+                month: 'filterMonthBtn'
+            };
+            Object.values(map).forEach(id => document.getElementById(id)?.classList.remove('active'));
+            if (map[currentDateFilter]) document.getElementById(map[currentDateFilter])?.classList.add('active');
+        }
+
+        function getDateOnly(dateObj) {
+            return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+        }
+
+        function getWeekRange(dateObj) {
+            const today = getDateOnly(dateObj);
+            const day = today.getDay(); // 0 = อาทิตย์, 1 = จันทร์
+            const diffToMonday = day === 0 ? -6 : 1 - day;
+            const start = new Date(today);
+            start.setDate(today.getDate() + diffToMonday);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            end.setHours(23, 59, 59, 999);
+            return { start, end };
+        }
+
+        function getDateRangeByFilter() {
+            const now = new Date();
+            const todayStart = getDateOnly(now);
+            const todayEnd = new Date(todayStart);
+            todayEnd.setHours(23, 59, 59, 999);
+
+            if (currentDateFilter === 'today') {
+                return { start: todayStart, end: todayEnd, label: 'วันนี้' };
+            }
+
+            if (currentDateFilter === 'week') {
+                const range = getWeekRange(now);
+                return { start: range.start, end: range.end, label: 'สัปดาห์นี้' };
+            }
+
+            if (currentDateFilter === 'month') {
+                const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                return { start, end, label: 'เดือนนี้' };
+            }
+
+            if (currentDateFilter === 'custom') {
+                const startValue = document.getElementById('startDate').value;
+                const endValue = document.getElementById('endDate').value;
+                const start = startValue ? new Date(startValue + 'T00:00:00') : null;
+                const end = endValue ? new Date(endValue + 'T23:59:59') : null;
+                let label = 'กำหนดเอง';
+                if (startValue || endValue) label = `ช่วงวันที่ ${startValue || 'เริ่มต้น'} ถึง ${endValue || 'ล่าสุด'}`;
+                return { start, end, label };
+            }
+
+            return { start: null, end: null, label: 'ทั้งหมด' };
+        }
+
         function searchTickets() {
             const keyword = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
-
-            updateActiveStatCard(statusFilter);
+            const dateRange = getDateRangeByFilter();
 
             let filtered = tickets.filter(t => {
                 const matchText = (t.requesterName || '').toLowerCase().includes(keyword) || 
@@ -811,14 +797,32 @@
                     matchPriority = (t.priority === priorityFilter);
                 }
 
-                return matchText && matchStatus && matchPriority;
+                let matchDate = true;
+                if (dateRange.start || dateRange.end) {
+                    const ticketDate = new Date(t.dateTime);
+                    if (dateRange.start && ticketDate < dateRange.start) matchDate = false;
+                    if (dateRange.end && ticketDate > dateRange.end) matchDate = false;
+                }
+
+                return matchText && matchStatus && matchPriority && matchDate;
             });
 
-            // ระบบจัดเรียงแบบมืออาชีพ:
-            // 1) งานปักหมุดขึ้นก่อน เรียง 1 -> 10
-            // 2) ถ้าเลือกจัดเรียงความเร่งด่วน จะเรียงความเร่งด่วนภายในกลุ่มที่ไม่ได้ปักหมุด
-            // 3) ถ้าไม่ได้เลือกอะไร งานใหม่ขึ้นก่อน
-            displayTickets(sortTicketsProfessional(filtered));
+            if (priorityFilter === 'sort_priority') {
+                filtered.sort((a, b) => {
+                    const pWeight = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+                    if (pWeight[b.priority] !== pWeight[a.priority]) {
+                        return pWeight[b.priority] - pWeight[a.priority]; 
+                    }
+                    return new Date(b.dateTime) - new Date(a.dateTime);
+                });
+            } else {
+                filtered.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+            }
+
+            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + dateRange.label + ' (' + filtered.length + ' รายการ)';
+            updateStats(filtered);
+            updateBottomSummary(filtered, dateRange.label);
+            displayTickets(filtered);
         }
 
         function downloadFile(content, filename, contentType) {
@@ -830,10 +834,10 @@
         function exportToJSON() { if(tickets.length===0) return; downloadFile(JSON.stringify(tickets, null, 2), 'IT_Tickets.json', 'application/json'); }
         function exportToCSV() {
             if(tickets.length===0) return;
-            const headers = ['ลำดับปักหมุด', 'เลขที่ใบงาน', 'วันที่-เวลา', 'ชื่อผู้แจ้ง', 'แผนก', 'เบอร์โทร', 'อีเมล', 'อุปกรณ์', 'รหัสครุภัณฑ์', 'สถานที่', 'ปัญหา', 'ความเร่งด่วน', 'สถานะ', 'หมายเหตุ'];
+            const headers = ['เลขที่ใบงาน', 'วันที่-เวลา', 'ชื่อผู้แจ้ง', 'แผนก', 'เบอร์โทร', 'อีเมล', 'อุปกรณ์', 'รหัสครุภัณฑ์', 'สถานที่', 'ปัญหา', 'ความเร่งด่วน', 'สถานะ', 'หมายเหตุ'];
             let csvContent = '\uFEFF' + headers.join(',') + '\n';
             tickets.forEach(t => {
-                const row = [normalizePinOrder(t.pinnedOrder), t.ticketNumber, t.dateTime, t.requesterName, t.department, t.phone, t.email, t.deviceType, t.assetNumber, t.location, t.problemDescription, t.priority, t.status, t.notes].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`);
+                const row = [t.ticketNumber, t.dateTime, t.requesterName, t.department, t.phone, t.email, t.deviceType, t.assetNumber, t.location, t.problemDescription, t.priority, t.status, t.notes].map(val => `"${(val || '').toString().replace(/"/g, '""')}"`);
                 csvContent += row.join(',') + '\n';
             });
             downloadFile(csvContent, 'IT_Tickets.csv', 'text/csv;charset=utf-8;');
