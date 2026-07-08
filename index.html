@@ -820,7 +820,7 @@
 
             document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + dateRange.label + ' (' + filtered.length + ' รายการ)';
             // Dashboard ด้านบนต้องคงเป็นยอดรวมทั้งหมด ไม่เปลี่ยนตามตัวกรองวันที่/สถานะ
-            updateStats(tickets);
+            updateStats(filtered);
             updateDashboardActiveCard(statusFilter);
             displayTickets(filtered);
         }
