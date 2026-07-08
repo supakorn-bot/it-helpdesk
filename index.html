@@ -26,6 +26,9 @@
         .action-btn { padding: 5px 10px; margin: 2px; border-radius: 5px; border: none; cursor: pointer; transition: all 0.2s; }
         .action-btn:hover { transform: scale(1.1); }
         .stats-card { background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .stats-card.clickable { cursor: pointer; transition: all .2s ease; border: 3px solid transparent; }
+        .stats-card.clickable:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,.15); }
+        .stats-card.clickable.active { border-color: #ffffff; box-shadow: 0 0 0 4px rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.18); transform: translateY(-2px); }
         .icon-box { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; }
         .icon-box-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
         .icon-box-warning { background-color: rgba(255, 193, 7, 0.2); color: #d39e00; }
@@ -187,10 +190,10 @@
 
         <!-- Statistics -->
         <div class="row mb-4">
-            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
-            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
-            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
-            <div class="col-md-3"><div class="stats-card"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
+            <div class="col-md-3"><div class="stats-card clickable active" id="statsCardAll" onclick="filterByStatusCard('all')" title="กดเพื่อดูทั้งหมด"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
+            <div class="col-md-3"><div class="stats-card clickable" id="statsCardPending" onclick="filterByStatusCard('pending')" title="กดเพื่อดูงานรอดำเนินการ"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card clickable" id="statsCardProcessing" onclick="filterByStatusCard('processing')" title="กดเพื่อดูงานกำลังดำเนินการ"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card clickable" id="statsCardCompleted" onclick="filterByStatusCard('completed')" title="กดเพื่อดูงานเสร็จสิ้น"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
         </div>
 
         <!-- Form Card Version 3: ย่อ/ขยายได้ -->
@@ -784,6 +787,7 @@
             const statusFilter = document.getElementById('statusFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
             const dateRange = getDateRangeByFilter();
+            updateStatsCardActive(statusFilter);
 
             let filtered = tickets.filter(t => {
                 const matchText = (t.requesterName || '').toLowerCase().includes(keyword) || 
@@ -823,6 +827,27 @@
             updateStats(filtered);
             updateBottomSummary(filtered, dateRange.label);
             displayTickets(filtered);
+        }
+
+        function updateStatsCardActive(status) {
+            const cardMap = {
+                all: 'statsCardAll',
+                pending: 'statsCardPending',
+                processing: 'statsCardProcessing',
+                completed: 'statsCardCompleted'
+            };
+            Object.values(cardMap).forEach(id => document.getElementById(id)?.classList.remove('active'));
+            document.getElementById(cardMap[status] || cardMap.all)?.classList.add('active');
+        }
+
+        function filterByStatusCard(status) {
+            const statusFilter = document.getElementById('statusFilter');
+            if (!statusFilter) return;
+
+            statusFilter.value = status === 'all' ? 'all' : status;
+            updateStatsCardActive(status);
+            searchTickets();
+            scrollToTicketTable();
         }
 
         function downloadFile(content, filename, contentType) {
