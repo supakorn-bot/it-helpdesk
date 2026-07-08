@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบใบงานแผนกไอที [PADUNSILPA GROUP] - V3.4 Final</title>
+    <title>ระบบใบงานแผนกไอที [PADUNSILPA GROUP]</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -26,10 +26,6 @@
         .action-btn { padding: 5px 10px; margin: 2px; border-radius: 5px; border: none; cursor: pointer; transition: all 0.2s; }
         .action-btn:hover { transform: scale(1.1); }
         .stats-card { background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .stats-card.clickable { cursor: pointer; transition: all .2s ease; border: 3px solid transparent; position: relative; z-index: 2; user-select: none; }
-        .stats-card.clickable * { pointer-events: none; }
-        .stats-card.clickable:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,.15); }
-        .stats-card.clickable.active { border-color: #ffffff; box-shadow: 0 0 0 4px rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.18); transform: translateY(-2px); }
         .icon-box { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; }
         .icon-box-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
         .icon-box-warning { background-color: rgba(255, 193, 7, 0.2); color: #d39e00; }
@@ -163,6 +159,21 @@
             font-weight: 700;
             margin-top: 4px;
         }
+        /* Version 3.5 Final: Dashboard กดได้ แต่ตัวเลขด้านบนคงเป็นยอดรวมทั้งหมดเสมอ */
+        .dashboard-filter-card {
+            cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease, outline .18s ease;
+            user-select: none;
+        }
+        .dashboard-filter-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+        }
+        .dashboard-filter-card.active {
+            outline: 4px solid rgba(255,255,255,0.75);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+        }
+
         @media (max-width: 768px) {
             .collapse-toggle-btn { font-size: 1.05rem; }
             .stats-number { font-size: 2rem; }
@@ -189,12 +200,12 @@
             <p class="text-white">ติดต่อกรณ์ไอที Tel: 063 886 8889 หรือ LINE ID: help.me.korn</p>
         </div>
 
-        <!-- Statistics -->
-        <div class="row mb-4" id="statsDashboard">
-            <div class="col-md-3"><div class="stats-card clickable active" id="statsCardAll" data-status="all" role="button" tabindex="0" onclick="filterByStatusCard('all')" title="กดเพื่อดูทั้งหมด"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
-            <div class="col-md-3"><div class="stats-card clickable" id="statsCardPending" data-status="pending" role="button" tabindex="0" onclick="filterByStatusCard('pending')" title="กดเพื่อดูงานรอดำเนินการ"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
-            <div class="col-md-3"><div class="stats-card clickable" id="statsCardProcessing" data-status="processing" role="button" tabindex="0" onclick="filterByStatusCard('processing')" title="กดเพื่อดูงานกำลังดำเนินการ"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
-            <div class="col-md-3"><div class="stats-card clickable" id="statsCardCompleted" data-status="completed" role="button" tabindex="0" onclick="filterByStatusCard('completed')" title="กดเพื่อดูงานเสร็จสิ้น"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
+        <!-- Statistics: Dashboard ด้านบนนับจากข้อมูลทั้งหมดเสมอ / กดเพื่อกรองตารางด้านล่าง -->
+        <div class="row mb-4">
+            <div class="col-md-3"><div class="stats-card dashboard-filter-card active" data-dashboard-status="all" onclick="filterByDashboardStatus('all')"><div class="icon-box icon-box-primary"><i class="bi bi-clipboard-check" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="totalTickets">0</div><div class="stats-label">ทั้งหมด</div></div></div>
+            <div class="col-md-3"><div class="stats-card dashboard-filter-card" data-dashboard-status="pending" onclick="filterByDashboardStatus('pending')"><div class="icon-box icon-box-warning"><i class="bi bi-clock-history" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="pendingTickets">0</div><div class="stats-label">รอดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card dashboard-filter-card" data-dashboard-status="processing" onclick="filterByDashboardStatus('processing')"><div class="icon-box icon-box-info"><i class="bi bi-gear-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="processingTickets">0</div><div class="stats-label">กำลังดำเนินการ</div></div></div>
+            <div class="col-md-3"><div class="stats-card dashboard-filter-card" data-dashboard-status="completed" onclick="filterByDashboardStatus('completed')"><div class="icon-box icon-box-success"><i class="bi bi-check-circle-fill" style="font-size: 1.8rem;"></i></div><div class="stats-number" id="completedTickets">0</div><div class="stats-label">เสร็จสิ้น</div></div></div>
         </div>
 
         <!-- Form Card Version 3: ย่อ/ขยายได้ -->
@@ -426,10 +437,7 @@
         let editingTicketId = null;
         let currentImageBase64 = null; 
 
-        document.addEventListener('DOMContentLoaded', function() {
-            bindStatsCardClicks();
-            loadTicketsFromDB();
-        });
+        document.addEventListener('DOMContentLoaded', loadTicketsFromDB);
 
         function showLoader(text) {
             document.getElementById('loaderText').innerText = text;
@@ -572,6 +580,19 @@
         function scrollToTicketTable() {
             const target = document.getElementById('ticketTableCard');
             if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function filterByDashboardStatus(status) {
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) statusFilter.value = status;
+            searchTickets();
+            scrollToTicketTable();
+        }
+
+        function updateDashboardActiveCard(status) {
+            document.querySelectorAll('.dashboard-filter-card').forEach(card => {
+                card.classList.toggle('active', card.dataset.dashboardStatus === status);
+            });
         }
 
         function generateTicketId() { return 'TICKET_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
@@ -792,15 +813,13 @@
             const priorityFilter = document.getElementById('priorityFilter').value;
             const dateRange = getDateRangeByFilter();
 
-            // V3.4 FINAL FIX
-            // แยก 2 ชุดข้อมูล:
-            // 1) baseFiltered = ใช้คำนวณ Dashboard ด้านบน (ไม่นับ statusFilter) เพื่อให้ตัวเลขการ์ดไม่เพี้ยนตอนกดการ์ด
-            // 2) filtered = ใช้แสดงตารางจริง (นับ statusFilter ด้วย)
-            const baseFiltered = tickets.filter(t => {
+            let filtered = tickets.filter(t => {
                 const matchText = (t.requesterName || '').toLowerCase().includes(keyword) || 
                                   (t.department || '').toLowerCase().includes(keyword) || 
                                   (t.problemDescription || '').toLowerCase().includes(keyword);
-
+                
+                const matchStatus = (statusFilter === 'all') || (t.status === statusFilter);
+                
                 let matchPriority = true;
                 if (priorityFilter !== 'all' && priorityFilter !== 'sort_priority') {
                     matchPriority = (t.priority === priorityFilter);
@@ -813,11 +832,7 @@
                     if (dateRange.end && ticketDate > dateRange.end) matchDate = false;
                 }
 
-                return matchText && matchPriority && matchDate;
-            });
-
-            let filtered = baseFiltered.filter(t => {
-                return (statusFilter === 'all') || (t.status === statusFilter);
+                return matchText && matchStatus && matchPriority && matchDate;
             });
 
             if (priorityFilter === 'sort_priority') {
@@ -832,56 +847,12 @@
                 filtered.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
             }
 
-            const statusTextMap = {
-                all: 'ทุกสถานะ',
-                pending: 'รอดำเนินการ',
-                processing: 'กำลังดำเนินการ',
-                completed: 'เสร็จสิ้น',
-                cancelled: 'ยกเลิก'
-            };
-            const statusLabel = statusTextMap[statusFilter] || 'ทุกสถานะ';
-            const labelText = dateRange.label + ' / ' + statusLabel;
-
-            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + labelText + ' (' + filtered.length + ' รายการ)';
-            updateStatsCardActive(statusFilter);
-            updateStats(baseFiltered);
-            updateBottomSummary(filtered, labelText);
+            document.getElementById('filterSummary').innerText = 'กำลังแสดง: ' + dateRange.label + ' (' + filtered.length + ' รายการ)';
+            // Dashboard ด้านบนต้องคงเป็นยอดรวมทั้งหมด ไม่เปลี่ยนตามตัวกรองวันที่/สถานะ
+            updateStats(tickets);
+            updateBottomSummary(filtered, dateRange.label);
+            updateDashboardActiveCard(statusFilter);
             displayTickets(filtered);
-        }
-
-        function bindStatsCardClicks() {
-            document.querySelectorAll('.stats-card.clickable').forEach(card => {
-                card.addEventListener('click', function() {
-                    filterByStatusCard(this.dataset.status || 'all');
-                });
-                card.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        filterByStatusCard(this.dataset.status || 'all');
-                    }
-                });
-            });
-        }
-
-        function updateStatsCardActive(status) {
-            const cardMap = {
-                all: 'statsCardAll',
-                pending: 'statsCardPending',
-                processing: 'statsCardProcessing',
-                completed: 'statsCardCompleted'
-            };
-            Object.values(cardMap).forEach(id => document.getElementById(id)?.classList.remove('active'));
-            document.getElementById(cardMap[status] || cardMap.all)?.classList.add('active');
-        }
-
-        function filterByStatusCard(status) {
-            const statusFilter = document.getElementById('statusFilter');
-            if (!statusFilter) return;
-
-            statusFilter.value = status === 'all' ? 'all' : status;
-            updateStatsCardActive(status);
-            searchTickets();
-            scrollToTicketTable();
         }
 
         function downloadFile(content, filename, contentType) {
