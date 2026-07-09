@@ -79,7 +79,7 @@
         .col-problem { width: auto; }
         .col-priority { width: 135px; text-align: center; }
         .col-status { width: 170px; text-align: center; }
-        .col-action { width: 125px; text-align: center; }
+        .col-action { width: 160px; text-align: center; }
         .badge,
         .badge-status {
             white-space: nowrap;
@@ -94,7 +94,7 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 6px;
-            max-width: 90px;
+            max-width: 135px;
             margin: 0 auto;
         }
         .action-group .action-btn {
@@ -141,6 +141,16 @@
         .dashboard-filter-card.active {
             outline: 4px solid rgba(255,255,255,0.75);
             box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+        }
+
+
+        /* Version 4.0: ปักหมุด + แก้ไขวันเวลาแจ้ง */
+        .ticket-row-pinned td {
+            background-color: #fff8e1 !important;
+        }
+        .pin-btn-active {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
         }
 
         @media (max-width: 768px) {
@@ -208,6 +218,15 @@
                         </div>
                         <div class="col-md-6 mb-3"><label class="form-label">เบอร์โทรติดต่อ หรือ Line ID</label><input type="text" class="form-control" id="phone"></div>
                         <div class="col-md-6 mb-3"><label class="form-label">อีเมล</label><input type="email" class="form-control" id="email"></div>
+
+                        <div class="col-md-6 mb-3 admin-edit-datetime" style="display:none;">
+                            <label class="form-label">วันที่แจ้ง (แก้ไขเฉพาะ Admin)</label>
+                            <input type="date" class="form-control" id="ticketDateInput">
+                        </div>
+                        <div class="col-md-6 mb-3 admin-edit-datetime" style="display:none;">
+                            <label class="form-label">เวลาแจ้ง (แก้ไขเฉพาะ Admin)</label>
+                            <input type="time" class="form-control" id="ticketTimeInput">
+                        </div>
 
                         <div class="col-md-12 mb-3 mt-3"><h5 class="text-primary"><i class="bi bi-laptop"></i> ข้อมูลอุปกรณ์</h5><hr></div>
                         <div class="col-md-6 mb-3"><label class="form-label required">ประเภทแจ้งงาน/ปัญหาอุปกรณ์</label>
@@ -392,7 +411,8 @@
         let tickets = [];
         let currentDateFilter = 'all';
         let editingTicketId = null;
-        let currentImageBase64 = null; 
+        let currentImageBase64 = null;
+        let pinnedTicketIds = JSON.parse(localStorage.getItem('pinnedTicketIds') || '[]'); 
 
         document.addEventListener('DOMContentLoaded', loadTicketsFromDB);
 
@@ -436,6 +456,55 @@
             document.getElementById('previewContainer').style.display = 'none';
         }
 
+
+        function pad2(n) {
+            return String(n).padStart(2, '0');
+        }
+
+        function setFormDateTimeInputs(isoString) {
+            const dt = isoString ? new Date(isoString) : new Date();
+            if (!isNaN(dt.getTime())) {
+                document.getElementById('ticketDateInput').value = `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
+                document.getElementById('ticketTimeInput').value = `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+            }
+        }
+
+        function getFormDateTime(isEditing) {
+            if (!isEditing) return new Date().toISOString();
+
+            const oldTicket = tickets.find(t => t.id === editingTicketId);
+            const dateValue = document.getElementById('ticketDateInput').value;
+            const timeValue = document.getElementById('ticketTimeInput').value || '00:00';
+
+            if (dateValue) {
+                const localDate = new Date(`${dateValue}T${timeValue}:00`);
+                if (!isNaN(localDate.getTime())) return localDate.toISOString();
+            }
+
+            return oldTicket ? oldTicket.dateTime : new Date().toISOString();
+        }
+
+        function showAdminDateTimeFields(show) {
+            document.querySelectorAll('.admin-edit-datetime').forEach(el => {
+                el.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        function togglePin(id) {
+            const idx = pinnedTicketIds.indexOf(id);
+            if (idx >= 0) {
+                pinnedTicketIds.splice(idx, 1);
+            } else {
+                pinnedTicketIds.push(id);
+            }
+            localStorage.setItem('pinnedTicketIds', JSON.stringify(pinnedTicketIds));
+            searchTickets();
+        }
+
+        function isPinned(id) {
+            return pinnedTicketIds.includes(id);
+        }
+
         function loadTicketsFromDB() {
             showLoader("กำลังเชื่อมต่อฐานข้อมูลส่วนกลาง...");
             fetch(SCRIPT_URL)
@@ -459,7 +528,7 @@
                 action: editingTicketId ? "update" : "create",
                 id: editingTicketId || generateTicketId(),
                 ticketNumber: editingTicketId ? tickets.find(t => t.id === editingTicketId).ticketNumber : generateTicketNumber(),
-                dateTime: editingTicketId ? tickets.find(t => t.id === editingTicketId).dateTime : new Date().toISOString(),
+                dateTime: getFormDateTime(editingTicketId),
                 requesterName: document.getElementById('requesterName').value,
                 department: document.getElementById('department').value,
                 phone: document.getElementById('phone').value,
@@ -507,6 +576,7 @@
             clearImage(); 
             document.getElementById('submitBtn').innerHTML = '<i class="bi bi-save"></i> บันทึกใบแจ้งซ่อม';
             document.getElementById('status').value = 'pending';
+            showAdminDateTimeFields(false);
         }
 
         function updateStats(sourceTickets = tickets) {
@@ -576,8 +646,12 @@
 
                 const hasImage = (ticket.attachedImage && ticket.attachedImage.indexOf('http') === 0) ? `<br><a href="${ticket.attachedImage}" target="_blank" class="text-decoration-none mt-2 d-inline-block"><i class="bi bi-paperclip has-attachment" title="ดูรูปภาพแนบ"></i> มีรูปภาพแนบ</a>` : '';
 
+                const pinClass = isPinned(ticket.id) ? 'ticket-row-pinned' : '';
+                const pinBtnClass = isPinned(ticket.id) ? 'pin-btn-active' : 'btn-outline-warning';
+                const pinTitle = isPinned(ticket.id) ? 'ยกเลิกปักหมุด' : 'ปักหมุด';
+
                 return `
-                    <tr>
+                    <tr class="${pinClass}">
                         <td><small>${formattedDate}</small></td>
                         <td>${ticket.requesterName}</td>
                         <td>${ticket.department}</td>
@@ -587,6 +661,7 @@
                         <td class="text-center">${statusBadge[ticket.status]}</td>
                         <td class="text-center">
                             <div class="action-group">
+                                <button class="action-btn btn-sm ${pinBtnClass}" onclick="togglePin('${ticket.id}')" title="${pinTitle}"><i class="bi bi-pin-angle-fill"></i></button>
                                 <button class="action-btn btn-sm btn-primary text-white" onclick="viewTicket('${ticket.id}')" title="ดูรายละเอียด"><i class="bi bi-eye"></i></button>
                                 <button class="action-btn btn-sm btn-warning" onclick="editTicket('${ticket.id}')" title="แก้ไข"><i class="bi bi-pencil"></i></button>
                                 <button class="action-btn btn-sm btn-danger" onclick="deleteTicket('${ticket.id}')" title="ลบ"><i class="bi bi-trash"></i></button>
@@ -641,6 +716,8 @@
             document.getElementById('priority').value = t.priority;
             document.getElementById('status').value = t.status;
             document.getElementById('notes').value = t.notes;
+            setFormDateTimeInputs(t.dateTime);
+            showAdminDateTimeFields(true);
 
             document.getElementById('imageUpload').value = '';
             currentImageBase64 = t.attachedImage || null;
@@ -687,12 +764,7 @@
         function setDateFilter(mode) {
             currentDateFilter = mode;
 
-            // เมื่อกดตัวกรองเวลา ให้แสดงทุกสถานะก่อนเสมอ
-            // เพื่อไม่ให้ติดค่าจากการกด Dashboard ด้านบนก่อนหน้า
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) statusFilter.value = 'all';
-            updateDashboardActiveCard('all');
-
+            // Version 4.0: เปลี่ยนช่วงเวลาแล้วคงสถานะที่เลือกไว้
             updateFilterButtons();
             searchTickets();
         }
@@ -806,6 +878,9 @@
 
             if (priorityFilter === 'sort_priority') {
                 filtered.sort((a, b) => {
+                    const pinDiff = (isPinned(b.id) ? 1 : 0) - (isPinned(a.id) ? 1 : 0);
+                    if (pinDiff !== 0) return pinDiff;
+
                     const pWeight = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
                     if (pWeight[b.priority] !== pWeight[a.priority]) {
                         return pWeight[b.priority] - pWeight[a.priority]; 
@@ -813,7 +888,11 @@
                     return new Date(b.dateTime) - new Date(a.dateTime);
                 });
             } else {
-                filtered.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                filtered.sort((a, b) => {
+                    const pinDiff = (isPinned(b.id) ? 1 : 0) - (isPinned(a.id) ? 1 : 0);
+                    if (pinDiff !== 0) return pinDiff;
+                    return new Date(b.dateTime) - new Date(a.dateTime);
+                });
             }
 
             const statusText = {
